@@ -51,6 +51,18 @@ step6:
 	docker run --name phpmyadmin -d -e PMA_HOST=mysql -e MYSQL_ROOT_PASSWORD=mypass123 --network wpsite -p 8081:80 phpmyadmin/phpmyadmin
 	docker run --name wordpress -v $(PWD)/html:/var/www/html -d -e WORDPRESS_DB_HOST=mysql:3306 -e WORDPRESS_DB_USER=wordpress -e WORDPRESS_DB_PASSWORD=wordpress --network wpsite -p 8082:80 wordpress
 
+step7: 
+	docker-compose up -d
+
+step7_stop:
+	docker-compose down
+
+step8:
+	docker-compose -f docker-compose-v2.yml up -d
+
+step8_stop:
+	docker-compose -f docker-compose-v2.yml down
+
 reset:
 	rm -fr data html
 	mkdir data

@@ -1,0 +1,78 @@
+version: '3.6'
+
+configs:
+  traefik.toml:
+    file: ./traefik.toml
+
+services:
+  reverse-proxy:
+    image: traefik
+    ports:
+      - "80:80"     
+      - "8080:8080" 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    configs:
+      - source: traefik.toml
+        target: /traefik.toml
+    networks:
+      - wpsite
+    labels:
+      - traefik.enable=true
+      - traefik.frontend.rule=Host:proxy.loc
+      - traefik.backend.loadbalancer.sticky=true
+      - traefik.frontend.passHostHeader=true
+      - traefik.port=8080      
+
+  mysql:
+    image: mysql:5.7
+    volumes: ['./data:/var/lib/mysql']
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mypass123
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+      - wpsite
+
+  phpmyadmin:
+    depends_on:
+      - mysql
+      - reverse-proxy
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: mypass123 
+    networks:
+      - wpsite
+    labels:
+      - "traefik.backend=phpmyadmin"
+      - "traefik.docker.network=wpsite"
+      - "traefik.frontend.rule=Host:phpmyadmin.loc"
+      - "traefik.enable=true"
+      - "traefik.default.protocol=http"
+
+  wordpress:
+    depends_on:
+      - mysql
+      - reverse-proxy
+    image: wordpress:latest
+    restart: always
+    volumes: ['./html:/var/www/html']
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    networks:
+      - wpsite
+    labels:
+      - "traefik.backend=wordpress"
+      - "traefik.docker.network=wpsite"
+      - "traefik.frontend.rule=Host:wordpress.loc"
+      - "traefik.enable=true"
+      - "traefik.default.protocol=http"
+
+networks:
+  wpsite:
