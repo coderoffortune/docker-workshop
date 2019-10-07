@@ -63,6 +63,9 @@ step8:
 step8_stop:
 	docker-compose -f docker-compose-v2.yml down
 
+step8_1:
+	docker-compose -f docker-compose-v2.yml up -d --scale wordpress=3
+
 reset:
 	rm -fr data html
 	mkdir data

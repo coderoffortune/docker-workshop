@@ -1,20 +1,12 @@
 version: '3.6'
 
-configs:
-  traefik.toml:
-    file: ./traefik.toml
-
 services:
   reverse-proxy:
     image: traefik
     ports:
       - "80:80"     
       - "8080:8080" 
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    configs:
-      - source: traefik.toml
-        target: /traefik.toml
+    volumes: ['/var/run/docker.sock:/var/run/docker.sock', './traefik.toml:/etc/traefik/traefik.toml']
     networks:
       - wpsite
     labels:
